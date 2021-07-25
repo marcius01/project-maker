@@ -1,0 +1,45 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'org.postgresql:postgresql:42.2.1'
+        
+        //        compile files('lib/2d-bin-packing-1.0.0.jar')
+    }
+}
+
+
+plugins {
+    id 'java'
+    id 'groovy'
+    id 'war'
+}
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+repositories {
+    jcenter()
+    ivy{ url './repo/' }
+    mavenCentral()
+}
+
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    testImplementation     'junit:junit:4.13'
+    implementation  'org.freemarker:freemarker:2.3.31'
+    implementation  'net.lingala.zip4j:zip4j:2.9.0'
+    implementation  'org.jsonschema2pojo:jsonschema2pojo-core:1.1.1'
+    implementation  'org.hibernate:hibernate-core:4.1.0.Final'
+    implementation  'org.apache.commons:commons-collections4:4.4'
+    compileOnly 'org.slf4j:slf4j-api:1.7.30'
+    compileOnly 'org.slf4j:jul-to-slf4j:1.7.30'
+    runtimeOnly 'ch.qos.logback:logback-classic:1.2.3'
+    runtimeOnly 'ch.qos.logback:logback-core:1.2.3'
+}
