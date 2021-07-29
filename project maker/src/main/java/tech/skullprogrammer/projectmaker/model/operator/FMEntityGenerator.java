@@ -104,17 +104,6 @@ public class FMEntityGenerator {
     private void modifyMethods(JDefinedClass definedClass) {
         for (JMethod method : definedClass.methods()) {
             rootMethodChain.execute(method);
-//            if (method.name().endsWith("UNIQUE")) {
-//                method.name(method.name().substring(0, method.name().length() - 6));
-//                if (method.name().startsWith("get")) {
-//                    method.annotate(new JCodeModel().ref(Column.class)).param("unique", true);
-//                }
-//                for (JVar param : method.params()) {
-//                    if (param.name().endsWith("UNIQUE")) {
-//                        param.name(param.name().substring(0, param.name().length() - 6));
-//                    }
-//                }
-//            }
         }
     }
 

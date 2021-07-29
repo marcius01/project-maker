@@ -76,13 +76,15 @@ public class PojoExporter {
 
     private static GenerationConfig defineConfiguration() {
         GenerationConfig config = new DefaultGenerationConfig() {
-            @Override
-            public boolean isGenerateBuilders() { // set config option by overriding method
-                return true;
-            }
 
+            @Override
             public SourceType getSourceType() {
                 return SourceType.JSONSCHEMA;
+            }
+            
+            @Override
+            public boolean isGenerateBuilders() { // set config option by overriding method
+                return false;
             }
 
             @Override
