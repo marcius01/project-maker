@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import org.apache.commons.collections4.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.skullprogrammer.projectmaker.model.fm.EntityClass;
@@ -23,6 +22,15 @@ import tech.skullprogrammer.projectmaker.model.fm.EntityProperty;
 public class FMEntityGenerator {
 
     private static Logger logger = LoggerFactory.getLogger(FMEntityGenerator.class);
+    private ChainGenerator.IChain rootNameChain;
+    private ChainGenerator.IChain rootMethodChain;
+
+    public FMEntityGenerator() {
+        rootNameChain = ChainGenerator.generateNameChain();        
+        rootMethodChain = ChainGenerator.generateMethodChain();
+    }
+    
+    
 
     public List<EntityClass> generatesEntitiesFromCodeModel(List<JCodeModel> models) {
         List<EntityClass> result = new ArrayList<>();
@@ -56,13 +64,13 @@ public class FMEntityGenerator {
             logger.debug("Number of artifacts of model after analisys: " + codeModel.countArtifacts());
             while (packages.hasNext()) {
                 JPackage jPackage = packages.next();
-                Iterator<JDefinedClass> classes = jPackage.classes();                
+                Iterator<JDefinedClass> classes = jPackage.classes();
                 while (classes.hasNext()) {
                     JDefinedClass definedClass = classes.next();
                     logger.debug("Analyzed class: {}", definedClass.name());
                     definedClass.annotate(codeModel.ref(Entity.class));
                     modifyFields(definedClass);
-                    modifyMethods(definedClass, codeModel);
+                    modifyMethods(definedClass);
                     Map<JDefinedClass, JPackage> cycleClass = cycles.get(definedClass.name());
                     filterClass(cycleClass, definedClass, cycles, classes, jPackage);
                 }
@@ -93,19 +101,20 @@ public class FMEntityGenerator {
         }
     }
 
-    private void modifyMethods(JDefinedClass definedClass, JCodeModel codeModel) {
+    private void modifyMethods(JDefinedClass definedClass) {
         for (JMethod method : definedClass.methods()) {
-            if (method.name().endsWith("UNIQUE")) {
-                method.name(method.name().substring(0, method.name().length() - 6));
-                if (method.name().startsWith("get")) {
-                    method.annotate(codeModel.ref(Column.class)).param("unique", true);
-                }
-                for (JVar param : method.params()) {
-                    if (param.name().endsWith("UNIQUE")) {
-                        param.name(param.name().substring(0, param.name().length() - 6));
-                    }
-                }
-            }
+            rootMethodChain.execute(method);
+//            if (method.name().endsWith("UNIQUE")) {
+//                method.name(method.name().substring(0, method.name().length() - 6));
+//                if (method.name().startsWith("get")) {
+//                    method.annotate(new JCodeModel().ref(Column.class)).param("unique", true);
+//                }
+//                for (JVar param : method.params()) {
+//                    if (param.name().endsWith("UNIQUE")) {
+//                        param.name(param.name().substring(0, param.name().length() - 6));
+//                    }
+//                }
+//            }
         }
     }
 
@@ -113,13 +122,17 @@ public class FMEntityGenerator {
         List<JFieldVar> toModify = new ArrayList<>();
         for (String key : definedClass.fields().keySet()) {
             JFieldVar field = (JFieldVar) definedClass.fields().get(key);
-            if (field.name().endsWith("UNIQUE")) {
-                toModify.add(field);
+            if (rootNameChain.check(field)) {
+                toModify.add(field);                
             }
         }
         for (JFieldVar fieldToModify : toModify) {
-            fieldToModify.name(fieldToModify.name().substring(0, fieldToModify.name().length() - 6));
+            modifyName(fieldToModify);
         }
+    }
+
+    private void modifyName(JFieldVar fieldToModify) {
+        rootNameChain.execute(fieldToModify);
     }
 
 }
