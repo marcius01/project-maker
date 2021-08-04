@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.skullprogrammer.projectmaker.model.fm.GetMethodInfo;
 import tech.skullprogrammer.projectmaker.model.operator.chain.IChain;
+import tech.skullprogrammer.projectmaker.utility.Errors;
 
 public class FMEntityGenerator {
 
@@ -35,30 +36,6 @@ public class FMEntityGenerator {
         rootMethodChain = ChainFactory.generateMethodChain();
     }
 
-//    public List<EntityClass> generatesEntitiesFromCodeModel(List<JCodeModel> models) {
-//        List<EntityClass> result = new ArrayList<>();
-//        for (JCodeModel codeModel : models) {
-//            EntityClass entityClass = new EntityClass();
-//            Iterator<JPackage> packages = codeModel.packages();
-//            while (packages.hasNext()) {
-//                JPackage jPackage = packages.next();
-//                entityClass.setPackageName(jPackage.name());
-//                Iterator<JDefinedClass> classes = jPackage.classes();
-//                while (classes.hasNext()) {
-//                    JDefinedClass definedClass = classes.next();
-//                    entityClass.setName(definedClass.name());
-//                    Map<String, EntityProperty> properties = new HashMap<>();
-//                    for (JMethod method : definedClass.methods()) {
-//                        logger.info("### {}", method.name());
-//                    }
-//                    for (String key : definedClass.fields().keySet()) {
-//                        logger.info("key: {} -- value: {}", key, ((JFieldVar) definedClass.fields().get(key)).type().fullName());
-//                    }
-//                }
-//            }
-//        }
-//        return result;
-//    }
     public void modifyModelForHibernate(List<JCodeModel> models) {
         Map<String, Pair<JDefinedClass, JPackage>> cycles = new HashMap<>();
         for (JCodeModel codeModel : models) {
@@ -70,14 +47,12 @@ public class FMEntityGenerator {
                 while (classes.hasNext()) {
                     JDefinedClass definedClass = classes.next();
                     logger.debug("Analyzed class: {}", definedClass.name());
-                    definedClass.annotate(codeModel.ref(Entity.class));
-                    modifyFields(definedClass);
-                    modifyMethods(definedClass);
                     filterClass(definedClass, cycles, classes, jPackage);
                 }
             }
             logger.debug("Number of artifacts of model before analisys: " + codeModel.countArtifacts());
         }
+        cleanClassAndAddEntityAnnotation(cycles);
         createEntityMapping(cycles);
     }
 
@@ -101,6 +76,15 @@ public class FMEntityGenerator {
             logger.debug("Equals: {}", definedClass.equals(cycleClass));
         } else {
             cycles.put(definedClass.name(), new ImmutablePair<>(definedClass, jPackage));
+        }
+    }
+
+    private void cleanClassAndAddEntityAnnotation(Map<String, Pair<JDefinedClass, JPackage>> cycles) {
+        for (String className : cycles.keySet()) {
+            JDefinedClass definedClass = cycles.get(className).getLeft();
+            definedClass.annotate(definedClass.owner().ref(Entity.class));
+            modifyFields(definedClass);
+            modifyMethods(definedClass);
         }
     }
 
@@ -134,10 +118,10 @@ public class FMEntityGenerator {
             Map<String, List<GetMethodInfo>> methodsMapForParametrizedType = methodsMap.get(className);
             for (String parametrizedType : methodsMapForParametrizedType.keySet()) {
                 List<GetMethodInfo> methodsForParametrizedType = methodsMapForParametrizedType.get(parametrizedType);
-                for (GetMethodInfo methodInfo : methodsForParametrizedType) {
+                for (GetMethodInfo methodInfoSelected : methodsForParametrizedType) {
                     Map<String, List<GetMethodInfo>> methodsMapForAssociatedParametrizedType = methodsMap.get(parametrizedType);
                     List<GetMethodInfo> methodsOfAssociatedEntity = methodsMapForAssociatedParametrizedType != null ? methodsMapForAssociatedParametrizedType.get(className) : null;
-                    createMapping(methodInfo, methodsOfAssociatedEntity, jCodeModel);
+                    createMapping(className, methodInfoSelected, methodsForParametrizedType, methodsOfAssociatedEntity, jCodeModel);
                 }
             }
         }
@@ -152,7 +136,6 @@ public class FMEntityGenerator {
             Pair<JDefinedClass, JPackage> element = elements.get(className);
             JDefinedClass definedClass = element.getLeft();
 //            JMethod methodtmp = definedClass.getMethod("getConti", new JType[0]);
-//            System.out.println("##### " + (methodtmp != null ? methodtmp.name() : ""));
             for (JMethod method : definedClass.methods()) {
                 if (method.type().isReference() && method.name().startsWith("get")) {
                     boolean parametrized = method.type().boxify().isParameterized();
@@ -164,7 +147,6 @@ public class FMEntityGenerator {
                     }
                     Pair<JDefinedClass, JPackage> entity = elements.get(parametrizedType);
                     boolean isEntityType = entity != null;
-//                    boolean isListReturn = method.type().erasure().equals(new JCodeModel().ref(List.class).unboxify());
                     if (isEntityType) {
                         String returnType = method.type().name();
                         String parameterName = extractParameterNameFromName(method.name());
@@ -189,7 +171,7 @@ public class FMEntityGenerator {
     }
 
     //TODO analize if it is possible to use a chain
-    private void createMapping(GetMethodInfo methodInfo, List<GetMethodInfo> methodsOfAssociatedEntity, JCodeModel jCodeModel) {
+    private void createMapping(String className, GetMethodInfo methodInfo, List<GetMethodInfo> methodsOfEntity, List<GetMethodInfo> methodsOfAssociatedEntity, JCodeModel jCodeModel) {
         JMethod method = methodInfo.getjMethod();
         if (methodsOfAssociatedEntity == null || methodsOfAssociatedEntity.isEmpty()) {
             if (methodInfo.isParametrized()) {
@@ -197,11 +179,10 @@ public class FMEntityGenerator {
             } else {
                 method.annotate(jCodeModel.ref(ManyToOne.class));
             }
-        } else if (methodsOfAssociatedEntity.size() > 1) {
-            //TODO associate best method between alternatives
-            throw new UnsupportedOperationException("Associated Entity with more than one reference not supported yet!");
+        } else if (methodsOfEntity.size() != methodsOfAssociatedEntity.size()) {
+            throw new UnsupportedOperationException("Different sizes for associations between " + className + " and " + methodInfo.getParametrizedType());
         } else {
-            GetMethodInfo associatedMethodInfo = methodsOfAssociatedEntity.get(0);
+            GetMethodInfo associatedMethodInfo = findAssociatedMethodInfo(methodInfo, methodsOfAssociatedEntity);
             if (methodInfo.isParametrized()) {
                 if (associatedMethodInfo.isParametrized()) {
                     JAnnotationUse annotation = method.annotate(jCodeModel.ref(ManyToMany.class));
@@ -227,4 +208,33 @@ public class FMEntityGenerator {
         }
 
     }
+
+    private GetMethodInfo findAssociatedMethodInfo(GetMethodInfo methodInfo, List<GetMethodInfo> methodsOfAssociatedEntity) {
+        if (methodsOfAssociatedEntity.size() == 1) {
+            return methodsOfAssociatedEntity.get(0);
+        }
+        for (GetMethodInfo associatedMethodInfo : methodsOfAssociatedEntity) {
+            String cleanedField = cleanFieldName(methodInfo.getAssociatedParameterName(), methodInfo.getParametrizedType()).toLowerCase();
+            String cleanedAssociatedField = cleanFieldName(associatedMethodInfo.getAssociatedParameterName(), associatedMethodInfo.getParametrizedType()).toLowerCase();
+            logger.debug("cleanedFields: {} -- {}", cleanedField, cleanedAssociatedField);
+            boolean methodInfoContainsAssociatedName = cleanedField.contains(cleanedAssociatedField);
+            boolean associatedMethodInfoContainsName = cleanedAssociatedField.contains(cleanedField);
+            if(methodInfoContainsAssociatedName || associatedMethodInfoContainsName) {
+                return associatedMethodInfo;
+            }            
+        }
+        throw new IllegalArgumentException(Errors.MULTIPLE_MAPPING_ASSOCCIATION_NOT_MATCHED + methodInfo.getAssociatedParameterName());
+    }
+    
+    private String cleanFieldName(String string, String toFind) {
+        String stringToLowerCase = string.toLowerCase();
+        String toFindToLowerCase = toFind.toLowerCase();
+        if (stringToLowerCase.contains(toFindToLowerCase)) {
+            int startIndex = stringToLowerCase.indexOf(toFindToLowerCase);
+            StringBuilder builder = new StringBuilder(string);
+            return builder.replace(startIndex, startIndex+toFind.length(), "").toString();
+        }
+        return string;
+    }
+
 }
