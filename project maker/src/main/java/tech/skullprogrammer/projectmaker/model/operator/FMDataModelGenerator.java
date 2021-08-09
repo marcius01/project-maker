@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import tech.skullprogrammer.projectmaker.Constants;
 import tech.skullprogrammer.projectmaker.model.Configuration;
+import tech.skullprogrammer.projectmaker.model.ConfigurationDB;
 import tech.skullprogrammer.projectmaker.model.fm.DAOClass;
 import tech.skullprogrammer.projectmaker.model.fm.DAODataModels;
 import tech.skullprogrammer.projectmaker.model.fm.DBClass;
@@ -44,8 +45,8 @@ public class FMDataModelGenerator {
                     daosRoots.put(dao.getName(), root);
                 }
             }
-        }
-        DBClass dBClass = new DBClass(configuration.getDbName(), configuration.getDbUsername(), configuration.getDbPassword());
+        }        
+        DBClass dBClass = createDBClass(configuration);
         configurationRoot.put(Constants.DB_DATA_MODEL, dBClass);
         configurationRoot.put(Constants.ENTITIES_DATA_MODEL, entities);        
         return new DAODataModels(daosRoots, configurationRoot);
@@ -95,6 +96,16 @@ public class FMDataModelGenerator {
 //        searchList.setOrderParameter("nome");
 //        entity.setListSearch(searchList);
         return entity;
+    }
+
+    private DBClass createDBClass(Configuration configuration) {
+        ConfigurationDB configurationDB = configuration.getConfigurationDB();
+        if (configurationDB == null) {
+            return null;
+        }
+        return new DBClass(configurationDB.getDbType(), configurationDB.getDbHost(), configurationDB.getDbPort(), configurationDB.getDbTmpDb(),
+                configurationDB.getDbDriver(), configurationDB.getDbSchemaGeneratorClass(), configurationDB.getDbName(),
+                configurationDB.getDbUsername(), configurationDB.getDbPassword(), configurationDB.getDbDialect());
     }
 
 }

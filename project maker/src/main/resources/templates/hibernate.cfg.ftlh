@@ -4,14 +4,13 @@
 
 <hibernate-configuration>
     <session-factory>
-        <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
+        <property name="hibernate.connection.driver_class">${db.driver}</property>
         <property name="hibernate.jdbc.use_streams_for_binary">true</property>
         <property name="current_session_context_class">thread</property>
         <property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
-        <property name="hibernate.connection.url">jdbc:postgresql:${db.name}</property>
+        <property name="hibernate.connection.url">jdbc:${db.host}://${db.host}:${db.port}/${db.name}</property>
         <property name="hibernate.connection.username">${db.username}</property>
         <property name="hibernate.connection.password">${db.password}</property>
-
         
         <!--
         <property name="c3p0.acquire_increment">1</property> 
@@ -23,7 +22,7 @@
         <property name="c3p0.statementCacheNumDeferredCloseThreads">1</property> 
         -->
 
-        <property name="dialect">org.hibernate.dialect.PostgreSQLDialect</property>
+        <property name="dialect">${db.dialect}</property>
         <property name="show_sql">false</property>
         <property name="format_sql">true</property>
         <property name="use_sql_comments">true</property>

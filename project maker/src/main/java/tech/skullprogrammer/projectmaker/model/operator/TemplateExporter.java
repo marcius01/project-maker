@@ -1,5 +1,6 @@
 package tech.skullprogrammer.projectmaker.model.operator;
 
+import com.google.common.collect.Maps;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -10,6 +11,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +40,7 @@ public class TemplateExporter {
         }
     }
 
-    public void exportFMDAOTemplateToFile(DAODataModels daoDataModel, Path sourceCodePath, Path resourcesPath, String persistencePackage) throws ExportException {
+    public void exportFMDAOTemplateToFile(DAODataModels daoDataModel,String projectName, Path projectPath, Path sourceCodePath, Path resourcesPath, String persistencePackage) throws ExportException {
         Path packagePath = Utility.fromPackageToPath(persistencePackage);
         Path completePath = sourceCodePath.resolve(packagePath);
         try {
@@ -49,7 +51,9 @@ public class TemplateExporter {
                 writeTemplateDAO("DAOEntity.ftlh", completePath, daoClass.getName(), root);
                 writeTemplateDAO("IDAOEntity.ftlh", completePath, daoClass.getInterfaceName(), root);
             }
-            writeTemplateConfiguration(daoDataModel.getConfigurationRoot(), resourcesPath);
+            writeTemplateConfiguration("hibernate.cfg.ftlh", "hibernate.cfg.xml", daoDataModel.getConfigurationRoot(), resourcesPath);
+            writeTemplateConfiguration("db.properties.ftlh", "db.properties", daoDataModel.getConfigurationRoot(), projectPath);
+            writeTemplate("settings.gradle.ftlh", "settings.gradle", Collections.singletonMap("projectName", projectName), projectPath);
         } catch (IOException | TemplateException ex) {
             throw new ExportException(ex);
         }
@@ -59,18 +63,22 @@ public class TemplateExporter {
         if (elementName == null || elementName.isEmpty()) {
             logger.debug("No name for element. Skip operation, don't write template");
         }
-        Template template = cfg.getTemplate(templateName);
-        Path elementFilePath = completePath.resolve(elementName + ".java");
-        Writer out = Files.newBufferedWriter(elementFilePath, Charset.forName("UTF-8"));
-        //Writer out = new OutputStreamWriter(System.out);
-        template.process(root, out);
-        logger.debug("Created file for template: {}", elementFilePath.toAbsolutePath());
+        writeTemplate(templateName, elementName + ".java", root, completePath);
     }
 
-    private void writeTemplateConfiguration(Map<String, Object> root, Path resourcesPath) throws TemplateException, IOException {
-        Template template = cfg.getTemplate("hibernate.cfg.ftlh");
-        Path elementFilePath = resourcesPath.resolve("hibernate.cfg.xml");
-        Writer out = Files.newBufferedWriter(elementFilePath, Charset.forName("UTF-8"));      
+    private void writeTemplateConfiguration(String templateName, String fileName, Map<String, Object> root, Path resourcesPath) throws TemplateException, IOException {
+        if (root.get(Constants.DB_DATA_MODEL) == null) {
+            logger.debug("No db configuration. Skip operation, don't write template");
+            return;
+        }
+        writeTemplate(templateName, fileName, root, resourcesPath);
+    }
+
+    private void writeTemplate(String templateName, String fileName, Map<String, Object> root, Path resourcesPath) throws IOException, TemplateException {
+        Template template = cfg.getTemplate(templateName);
+        Path elementFilePath = resourcesPath.resolve(fileName);
+        //Writer out = new OutputStreamWriter(System.out);
+        Writer out = Files.newBufferedWriter(elementFilePath, Charset.forName("UTF-8"));
         template.process(root, out);
         logger.debug("Created file for template: {}", elementFilePath.toAbsolutePath());
     }

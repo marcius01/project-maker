@@ -17,14 +17,12 @@ public class Configuration {
     private String daoInterfaceExtensionPackage;
     private String daoExceptionName;
     private String daoExceptionPackage;
-    private String dbName;
-    private String dbUsername;
-    private String dbPassword;
+    private ConfigurationDB configurationDB;
 
     public Configuration(String packageRootName, String packageModelName, String packagePersistenceName, String templatePath, String templateOutputName,
             String outputPath, String jsonFolderPath, Boolean daoParametrized, String extensionName, String extensionPackage, Boolean daoInterfaceParametrized,
             String daoInterfaceExtensionName, String daoInterfaceExtensionPackage, String daoExceptionName, String daoExceptionPackage, 
-            String dbName, String dbUsername, String dbPassword) {
+            ConfigurationDB configurationDB) {
         this.packageRootName = packageRootName;
         this.packageModelName = packageModelName;
         this.packagePersistenceName = packagePersistenceName;
@@ -39,10 +37,8 @@ public class Configuration {
         this.daoInterfaceExtensionName = daoInterfaceExtensionName;
         this.daoInterfaceExtensionPackage = daoInterfaceExtensionPackage;
         this.daoExceptionName = daoExceptionName;
-        this.daoExceptionPackage = daoExceptionPackage;
-        this.dbName = dbName;
-        this.dbUsername = dbUsername;
-        this.dbPassword = dbPassword;                
+        this.daoExceptionPackage = daoExceptionPackage;     
+        this.configurationDB = configurationDB;
     }
 
     public String getPackageRootName() {
@@ -165,29 +161,12 @@ public class Configuration {
         this.daoExceptionPackage = daoExceptionPackage;
     }
 
-    public String getDbName() {
-        return dbName;
+    public ConfigurationDB getConfigurationDB() {
+        return configurationDB;
     }
 
-    public void setDbName(String dbName) {
-        this.dbName = dbName;
+    public void setConfigurationDB(ConfigurationDB configurationDB) {
+        this.configurationDB = configurationDB;
     }
-
-    public String getDbUsername() {
-        return dbUsername;
-    }
-
-    public void setDbUsername(String dbUsername) {
-        this.dbUsername = dbUsername;
-    }
-
-    public String getDbPassword() {
-        return dbPassword;
-    }
-
-    public void setDbPassword(String dbPassword) {
-        this.dbPassword = dbPassword;
-    }
-
     
 }

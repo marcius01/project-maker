@@ -6,6 +6,7 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.skullprogrammer.projectmaker.model.Configuration;
+import tech.skullprogrammer.projectmaker.model.ConfigurationDB;
 import tech.skullprogrammer.projectmaker.persistence.DAOException;
 import tech.skullprogrammer.projectmaker.utility.Utility;
 
@@ -68,13 +69,12 @@ public class ConfigurationProxy {
             String daoInterfaceExtensionPackage = proprieta.getProperty("datamodel.dao.interface.extension.package");
             String daoExceptionName = proprieta.getProperty("datamodel.dao.exception.name");
             String daoExceptionPackage = proprieta.getProperty("datamodel.dao.exception.package");
-            String dbName = proprieta.getProperty("db.name");
-            String dbUsername = proprieta.getProperty("db.username");
-            String dbPassword = proprieta.getProperty("db.password");
+            Boolean dbProject = Boolean.parseBoolean(proprieta.getProperty("db.project"));
+            ConfigurationDB configurationDB = dbProject ? ComponentFactory.getInstance().getConfigurationDBProxy().getConfiguration() : null;
             Configuration config = new Configuration(packageRootName, packageModelName, packagePersistenceName, templatePath, templateOutputName,
                     outputPath, jsonFolderPath, daoParametrized, extensionName, extensionPackage, daoInterfaceParametrized, daoInterfaceExtensionName,
                     daoInterfaceExtensionPackage, daoExceptionName, daoExceptionPackage,
-                    dbName, dbUsername, dbPassword);
+                    configurationDB);
             logger.info("Configuration loaded: {}", config);
             return config;
         } catch (Exception e) {

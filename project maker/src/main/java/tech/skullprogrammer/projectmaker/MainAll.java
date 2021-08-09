@@ -33,8 +33,9 @@ public class MainAll {
         TemplateExporter templateExporter = new TemplateExporter();
         String modelPackage = configuration.getPackageRootName() + "." + configuration.getPackageModelName();
         String persistencePackage = configuration.getPackageRootName() + "." + configuration.getPackagePersistenceName();
-        Path sourceFolder = Paths.get(configuration.getOutputPath(), configuration.getTemplateOutputName(), "src", "main", "java");
-        Path resourcesFolder = Paths.get(configuration.getOutputPath(), configuration.getTemplateOutputName(), "src", "main", "resources");
+        Path projectFolder = Paths.get(configuration.getOutputPath(), configuration.getTemplateOutputName());
+        Path sourceFolder = projectFolder.resolve("src").resolve("main").resolve("java");
+        Path resourcesFolder = projectFolder.resolve("src").resolve("main").resolve("resources");
 //        pojoExporter.exportFromJsonToPojoFile(configuration.getJsonFolderPath(), modelPackage, sourceFolder.toString());
         List<JCodeModel> models = pojoExporter.exportFromJsonToCodeModel(configuration.getJsonFolderPath(), modelPackage);
         System.out.println("Creation Completed!");
@@ -47,7 +48,7 @@ public class MainAll {
         System.out.println("Generation DataModels - Completed!");
         pojoExporter.exportJCodeModelToFile(models, sourceFolder.toString());
         System.out.println("Export Entities - Completed!");
-        templateExporter.exportFMDAOTemplateToFile(daoDataModel, sourceFolder, resourcesFolder, persistencePackage);
+        templateExporter.exportFMDAOTemplateToFile(daoDataModel,configuration.getTemplateOutputName(), projectFolder, sourceFolder, resourcesFolder, persistencePackage);
         System.out.println("Export DAOs - Completed!");
         
         
