@@ -1,6 +1,5 @@
 package tech.skullprogrammer.projectmaker.proxy;
 
-
 import java.io.InputStream;
 import java.util.Date;
 import java.util.Properties;
@@ -56,11 +55,26 @@ public class ConfigurationProxy {
             proprieta.load(stream);
             String packageRootName = proprieta.getProperty("package.root.name");
             String packageModelName = proprieta.getProperty("package.model.name");
+            String packagePersistenceName = proprieta.getProperty("package.persistence.name");
             String jsonFolderPath = proprieta.getProperty("json.folder.path");
             String templatePath = proprieta.getProperty("template.path");
             String templateOutputName = proprieta.getProperty("template.output.name");
             String outputPath = proprieta.getProperty("output.path");
-            Configuration config = new Configuration(packageRootName, packageModelName, templatePath, templateOutputName, outputPath, jsonFolderPath);
+            Boolean daoParametrized = Boolean.parseBoolean(proprieta.getProperty("datamodel.dao.parametrized"));
+            String extensionName = proprieta.getProperty("datamodel.dao.extension.name");
+            String extensionPackage = proprieta.getProperty("datamodel.dao.extension.package");
+            Boolean daoInterfaceParametrized = Boolean.parseBoolean(proprieta.getProperty("datamodel.dao.interface.parametrized"));
+            String daoInterfaceExtensionName = proprieta.getProperty("datamodel.dao.interface.extension.name");
+            String daoInterfaceExtensionPackage = proprieta.getProperty("datamodel.dao.interface.extension.package");
+            String daoExceptionName = proprieta.getProperty("datamodel.dao.exception.name");
+            String daoExceptionPackage = proprieta.getProperty("datamodel.dao.exception.package");
+            String dbName = proprieta.getProperty("db.name");
+            String dbUsername = proprieta.getProperty("db.username");
+            String dbPassword = proprieta.getProperty("db.password");
+            Configuration config = new Configuration(packageRootName, packageModelName, packagePersistenceName, templatePath, templateOutputName,
+                    outputPath, jsonFolderPath, daoParametrized, extensionName, extensionPackage, daoInterfaceParametrized, daoInterfaceExtensionName,
+                    daoInterfaceExtensionPackage, daoExceptionName, daoExceptionPackage,
+                    dbName, dbUsername, dbPassword);
             logger.info("Configuration loaded: {}", config);
             return config;
         } catch (Exception e) {

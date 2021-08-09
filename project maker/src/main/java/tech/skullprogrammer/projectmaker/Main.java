@@ -76,8 +76,8 @@ public class Main {
         searchList.setName("nome");
         searchList.setType("String");
         searchList.setOrderParameter("nome");
-        entity.setUniqueSearch(searchUnique);
-        entity.setListSearch(searchList);
+//        entity.setUniqueSearch(searchUnique);
+//        entity.setListSearch(searchList);
 
         root.put("dao", dao);
         root.put("entity", entity);

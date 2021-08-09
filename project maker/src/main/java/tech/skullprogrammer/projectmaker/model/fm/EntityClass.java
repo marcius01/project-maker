@@ -1,13 +1,13 @@
 package tech.skullprogrammer.projectmaker.model.fm;
 
+import java.util.ArrayList;
 import java.util.List;
-
 
 public class EntityClass {
 
     private String packageName;
     private String name;
-    private SearchType uniqueSearch;
+    private List<SearchType> uniqueSearchs = new ArrayList<>();
     private SearchType listSearch;
     private List<EntityProperty> properties;
 
@@ -27,14 +27,18 @@ public class EntityClass {
         this.name = name;
     }
 
-    public SearchType getUniqueSearch() {
-        return uniqueSearch;
+    public List<SearchType> getUniqueSearchs() {
+        return uniqueSearchs;
     }
 
-    public void setUniqueSearch(SearchType uniqueSearch) {
-        this.uniqueSearch = uniqueSearch;
+    public void setUniqueSearchs(List<SearchType> uniqueSearchs) {
+        this.uniqueSearchs = uniqueSearchs;
     }
-
+    
+    public void addUniqueSearch(SearchType uniqueSearch) {
+        this.uniqueSearchs.add(uniqueSearch);        
+    }
+    
     public SearchType getListSearch() {
         return listSearch;
     }
@@ -42,6 +46,5 @@ public class EntityClass {
     public void setListSearch(SearchType listSearch) {
         this.listSearch = listSearch;
     }
-    
-    
+
 }

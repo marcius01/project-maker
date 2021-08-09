@@ -23,7 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.skullprogrammer.projectmaker.model.fm.GetMethodInfo;
 import tech.skullprogrammer.projectmaker.model.operator.chain.IChain;
-import tech.skullprogrammer.projectmaker.utility.Errors;
+import tech.skullprogrammer.projectmaker.utility.CodeModelUtility;
+import tech.skullprogrammer.projectmaker.error.Errors;
 
 public class FMEntityGenerator {
 
@@ -149,7 +150,7 @@ public class FMEntityGenerator {
                     boolean isEntityType = entity != null;
                     if (isEntityType) {
                         String returnType = method.type().name();
-                        String parameterName = extractParameterNameFromName(method.name());
+                        String parameterName = CodeModelUtility.extractParameterNameFromName(method.name());
                         GetMethodInfo methodInfo = new GetMethodInfo(method, parameterName, returnType, parametrized, parametrizedType);
                         List<GetMethodInfo> methodsForParametrizedType = methodsMapForParametrizedType.get(methodInfo.getParametrizedType());
                         if (methodsForParametrizedType == null) {
@@ -163,11 +164,6 @@ public class FMEntityGenerator {
             }
         }
         return methodsMap;
-    }
-
-    private String extractParameterNameFromName(String name) {
-        String result = name.replace("get", "");
-        return Character.toLowerCase(result.charAt(0)) + result.substring(1);
     }
 
     //TODO analize if it is possible to use a chain

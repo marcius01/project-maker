@@ -5,36 +5,52 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
+import tech.skullprogrammer.projectmaker.error.ExportException;
 import tech.skullprogrammer.projectmaker.model.Configuration;
+import tech.skullprogrammer.projectmaker.model.fm.DAODataModels;
+import tech.skullprogrammer.projectmaker.model.operator.FMDataModelGenerator;
 import tech.skullprogrammer.projectmaker.model.operator.FMEntityGenerator;
 import tech.skullprogrammer.projectmaker.model.operator.OperatorException;
 import tech.skullprogrammer.projectmaker.model.operator.PojoExporter;
+import tech.skullprogrammer.projectmaker.model.operator.TemplateExporter;
 import tech.skullprogrammer.projectmaker.proxy.ComponentFactory;
 import tech.skullprogrammer.projectmaker.utility.Utility;
 
 public class MainAll {
 
-    public static void main(String[] args) throws OperatorException, IOException {
+    public static void main(String[] args) throws OperatorException, IOException, ExportException {
         new MainAll().execute();
     }
 
-    private void execute() throws OperatorException, IOException {
+    private void execute() throws OperatorException, IOException, ExportException {
 
         Configuration configuration = ComponentFactory.getInstance().getConfigurationProxy().getConfiguration();    
         Path templatePath = Paths.get(configuration.getTemplatePath());
         Path outputPath = Paths.get(configuration.getOutputPath());
         Utility.unzipFolderZip4j(templatePath, outputPath, configuration.getTemplateOutputName(), true);
         PojoExporter pojoExporter = new PojoExporter();
+        TemplateExporter templateExporter = new TemplateExporter();
         String modelPackage = configuration.getPackageRootName() + "." + configuration.getPackageModelName();
+        String persistencePackage = configuration.getPackageRootName() + "." + configuration.getPackagePersistenceName();
         Path sourceFolder = Paths.get(configuration.getOutputPath(), configuration.getTemplateOutputName(), "src", "main", "java");
+        Path resourcesFolder = Paths.get(configuration.getOutputPath(), configuration.getTemplateOutputName(), "src", "main", "resources");
 //        pojoExporter.exportFromJsonToPojoFile(configuration.getJsonFolderPath(), modelPackage, sourceFolder.toString());
         List<JCodeModel> models = pojoExporter.exportFromJsonToCodeModel(configuration.getJsonFolderPath(), modelPackage);
         System.out.println("Creation Completed!");
         FMEntityGenerator fmGenerator = new FMEntityGenerator();
+        FMDataModelGenerator fmDataModelGenerator = new FMDataModelGenerator();
 //        fmGenerator.generatesEntitiesFromCodeModel(models);
         fmGenerator.modifyModelForHibernate(models);
-        System.out.println("Modification Completed!");
+        System.out.println("Modification CodeModels - Completed!");
+        DAODataModels daoDataModel = fmDataModelGenerator.generateDAODataModels(models, configuration, persistencePackage, modelPackage);
+        System.out.println("Generation DataModels - Completed!");
         pojoExporter.exportJCodeModelToFile(models, sourceFolder.toString());
-        System.out.println("Export Completed!");
+        System.out.println("Export Entities - Completed!");
+        templateExporter.exportFMDAOTemplateToFile(daoDataModel, sourceFolder, resourcesFolder, persistencePackage);
+        System.out.println("Export DAOs - Completed!");
+        
+        
+        
     }
 }

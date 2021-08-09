@@ -36,8 +36,9 @@
     </logger>-->
         
     <!-- ALTRE -->
-    <logger name="tech.skullprogrammer.projectmaker.model.operator.PojoExporter" level="DEBUG"/>
     <logger name="tech.skullprogrammer.projectmaker.model.operator.FMEntityGenerator" level="DEBUG"/>
+    <logger name="tech.skullprogrammer.projectmaker.model.operator.TemplateExporter" level="DEBUG"/>
+    <!--<logger name="tech.skullprogrammer.projectmaker.model.operator.PojoExporter" level="DEBUG"/>-->
 
     <!-- EXT LIBRARIES  -->
     <!--<logger name="" level="ERROR"/>-->

@@ -1,4 +1,4 @@
-package tech.skullprogrammer.projectmaker.utility;
+package tech.skullprogrammer.projectmaker.error;
 
 
 public class Errors {

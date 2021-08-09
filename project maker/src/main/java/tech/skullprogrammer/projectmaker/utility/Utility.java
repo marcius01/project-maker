@@ -90,4 +90,13 @@ public class Utility {
         return result.toString();
     }
 
+    public static Path fromPackageToPath(String packageString) {
+        String[] tokens = packageString.split("\\."); 
+        Path path = Paths.get("");
+        for (String token : tokens) {
+            path = path.resolve(token);
+        }
+        return path;
+    }    
+    
 }
