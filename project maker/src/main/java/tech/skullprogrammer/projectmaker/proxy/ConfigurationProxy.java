@@ -70,10 +70,11 @@ public class ConfigurationProxy {
             String daoExceptionName = proprieta.getProperty("datamodel.dao.exception.name");
             String daoExceptionPackage = proprieta.getProperty("datamodel.dao.exception.package");
             Boolean dbProject = Boolean.parseBoolean(proprieta.getProperty("db.project"));
+            String dtoPackage = proprieta.getProperty("datamodel.dto.package");
             ConfigurationDB configurationDB = dbProject ? ComponentFactory.getInstance().getConfigurationDBProxy().getConfiguration() : null;
             Configuration config = new Configuration(packageRootName, packageModelName, packagePersistenceName, templatePath, templateOutputName,
                     outputPath, jsonFolderPath, daoParametrized, extensionName, extensionPackage, daoInterfaceParametrized, daoInterfaceExtensionName,
-                    daoInterfaceExtensionPackage, daoExceptionName, daoExceptionPackage,
+                    daoInterfaceExtensionPackage, daoExceptionName, daoExceptionPackage, dtoPackage,
                     configurationDB);
             logger.info("Configuration loaded: {}", config);
             return config;

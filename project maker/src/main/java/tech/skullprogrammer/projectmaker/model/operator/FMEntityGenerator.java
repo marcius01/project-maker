@@ -9,7 +9,6 @@ import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JPackage;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.persistence.Entity;
@@ -17,7 +16,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,47 +35,9 @@ public class FMEntityGenerator {
         rootMethodChain = ChainFactory.generateMethodChain();
     }
 
-    public void modifyModelForHibernate(List<JCodeModel> models) {
-        Map<String, Pair<JDefinedClass, JPackage>> cycles = new HashMap<>();
-        for (JCodeModel codeModel : models) {
-            Iterator<JPackage> packages = codeModel.packages();
-            logger.debug("Number of artifacts of model after analisys: " + codeModel.countArtifacts());
-            while (packages.hasNext()) {
-                JPackage jPackage = packages.next();
-                Iterator<JDefinedClass> classes = jPackage.classes();
-                while (classes.hasNext()) {
-                    JDefinedClass definedClass = classes.next();
-                    logger.debug("Analyzed class: {}", definedClass.name());
-                    filterClass(definedClass, cycles, classes, jPackage);
-                }
-            }
-            logger.debug("Number of artifacts of model before analisys: " + codeModel.countArtifacts());
-        }
+    public void modifyModelForHibernate(Map<String, Pair<JDefinedClass, JPackage>> cycles) {
         cleanClassAndAddEntityAnnotation(cycles);
         createEntityMapping(cycles);
-    }
-
-    private void filterClass(JDefinedClass definedClass, Map<String, Pair<JDefinedClass, JPackage>> cycles, Iterator<JDefinedClass> classes, JPackage jPackage) {
-        Pair<JDefinedClass, JPackage> cycleClassPackage = cycles.get(definedClass.name());
-        if (cycleClassPackage != null) {
-            JDefinedClass cycleClass = cycleClassPackage.getLeft();
-            int cycleClassMethodsNumber = cycleClass.methods().size();
-            int definedClassMethodsNumber = cycleClass.methods().size();
-            logger.debug("Cycle Class methods: {}", cycleClass.methods().size());
-            logger.debug("Analized Class methods: {}", definedClass.methods().size());
-            if (cycleClassMethodsNumber > definedClassMethodsNumber) {
-                logger.debug("Remove Duplicated or Less Informative Class for: {}", definedClass.name());
-                classes.remove();
-            } else {
-                logger.debug("Found More Informative Class for: {}", definedClass.name());
-                JPackage cyclePackage = cycleClassPackage.getRight();
-                cyclePackage.remove(cycleClass);
-                cycles.put(definedClass.name(), new ImmutablePair<>(definedClass, jPackage));
-            }
-            logger.debug("Equals: {}", definedClass.equals(cycleClass));
-        } else {
-            cycles.put(definedClass.name(), new ImmutablePair<>(definedClass, jPackage));
-        }
     }
 
     private void cleanClassAndAddEntityAnnotation(Map<String, Pair<JDefinedClass, JPackage>> cycles) {

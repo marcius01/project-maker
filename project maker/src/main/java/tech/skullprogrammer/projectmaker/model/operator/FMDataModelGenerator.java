@@ -1,34 +1,83 @@
 package tech.skullprogrammer.projectmaker.model.operator;
 
 import com.sun.codemodel.JAnnotationUse;
+import com.sun.codemodel.JClass;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
+import com.sun.codemodel.JFieldVar;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JPackage;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tech.skullprogrammer.projectmaker.Constants;
 import tech.skullprogrammer.projectmaker.model.Configuration;
 import tech.skullprogrammer.projectmaker.model.ConfigurationDB;
 import tech.skullprogrammer.projectmaker.model.fm.DAOClass;
 import tech.skullprogrammer.projectmaker.model.fm.DAODataModels;
 import tech.skullprogrammer.projectmaker.model.fm.DBClass;
+import tech.skullprogrammer.projectmaker.model.fm.DTOClass;
 import tech.skullprogrammer.projectmaker.model.fm.EntityClass;
+import tech.skullprogrammer.projectmaker.model.fm.PropertyClass;
 import tech.skullprogrammer.projectmaker.model.fm.SearchType;
 import tech.skullprogrammer.projectmaker.utility.CodeModelUtility;
 
 public class FMDataModelGenerator {
 
+    private static Logger logger = LoggerFactory.getLogger(FMDataModelGenerator.class);
+
     public FMDataModelGenerator() {
+    }
+
+    public Map<String, Map<String, Object>> generateDTODataModels(List<JCodeModel> models, Configuration configuration ) {
+        Map<String, Map<String, Object>> dtosRoots = new HashMap<>();
+        for (JCodeModel codeModel : models) {
+            Iterator<JPackage> packages = codeModel.packages();
+            while (packages.hasNext()) {
+                JPackage jPackage = packages.next();
+//                logger.debug("package name: {}", jPackage.name());
+                Iterator<JDefinedClass> classes = jPackage.classes();
+                while (classes.hasNext()) {
+                    Map<String, Object> root = new HashMap<>();
+                    JDefinedClass definedClass = classes.next();
+
+                    DTOClass dto = new DTOClass();
+                    dto.setPackageName(getPackageName(jPackage.name(), configuration.getDtoPackage()));
+                    dto.setName(Constants.PREFIX_DTO + definedClass.name());
+                    List<PropertyClass> properties = new ArrayList<>();
+                    Set<String> imports = new HashSet<>();
+                    dto.setProperties(properties);
+                    Map<String, JFieldVar> fields = definedClass.fields();
+                    for (String fieldName : fields.keySet()) {
+                        JFieldVar fieldVar = fields.get(fieldName);
+//                        logger.debug(fieldVar.type().name() + " --> " + fieldVar.type().boxify()._package().name() + " - " + CodeModelUtility.extractBaseType(fieldVar));                        
+//                        String importToAdd = fieldVar.type().boxify()._package().name() + "." + CodeModelUtility.extractBaseType(fieldVar);
+//                        String importParametrizedToAdd = fieldVar.type().boxify()._package().name() + "." + CodeModelUtility.extractParametrizedType(fieldVar);
+                        addImports(imports, fieldVar, dto);
+
+//                        PropertyClass propertyClass = new PropertyClass(fieldVar.type().name(), fieldName, CodeModelUtility.extractParametrizedType(fieldVar));
+                        PropertyClass propertyClass = new PropertyClass(fieldVar.type().name(), fieldName, null);
+                        properties.add(propertyClass);
+                    }
+                    dto.setImports(new ArrayList<>(imports));
+                    root.put(Constants.DTO_DATA_MODEL, dto);
+                    dtosRoots.put(dto.getName(), root);
+                }
+            }
+        }
+        return dtosRoots;
     }
 
     public DAODataModels generateDAODataModels(List<JCodeModel> models, Configuration configuration, String persistencePackage, String modelPackage) {
         Map<String, Map<String, Object>> daosRoots = new HashMap<>();
         Map<String, Object> configurationRoot = new HashMap<>();
-        List<EntityClass> entities =  new ArrayList();
+        List<EntityClass> entities = new ArrayList();
         for (JCodeModel codeModel : models) {
             Iterator<JPackage> packages = codeModel.packages();
             while (packages.hasNext()) {
@@ -45,10 +94,10 @@ public class FMDataModelGenerator {
                     daosRoots.put(dao.getName(), root);
                 }
             }
-        }        
+        }
         DBClass dBClass = createDBClass(configuration);
         configurationRoot.put(Constants.DB_DATA_MODEL, dBClass);
-        configurationRoot.put(Constants.ENTITIES_DATA_MODEL, entities);        
+        configurationRoot.put(Constants.ENTITIES_DATA_MODEL, entities);
         return new DAODataModels(daosRoots, configurationRoot);
     }
 
@@ -66,7 +115,7 @@ public class FMDataModelGenerator {
         if (extensionName != null && !extensionName.isEmpty()) {
             daoClass.setExtensionName(extensionName);
             daoClass.setExtensionPackage(configuration.getExtensionPackage());
-        }        
+        }
         daoClass.setParametrized(configuration.getDaoParametrized());
         daoClass.setExceptionName(configuration.getDaoExceptionName());
         daoClass.setExceptionPackage(configuration.getDaoExceptionPackage());
@@ -106,6 +155,28 @@ public class FMDataModelGenerator {
         return new DBClass(configurationDB.getDbType(), configurationDB.getDbHost(), configurationDB.getDbPort(), configurationDB.getDbTmpDb(),
                 configurationDB.getDbDriver(), configurationDB.getDbSchemaGeneratorClass(), configurationDB.getDbName(),
                 configurationDB.getDbUsername(), configurationDB.getDbPassword(), configurationDB.getDbDialect());
+    }
+
+    private void addImports(Set<String> imports, JFieldVar fieldVar, DTOClass dto) {
+        JClass jClassToAdd = CodeModelUtility.extractBaseType(fieldVar);
+        JClass jClassParametrizedToAdd = CodeModelUtility.extractParametrizedType(fieldVar);
+        boolean notToAddJClass = jClassToAdd._package().name().equals("java.lang") || dto.getPackageName().equalsIgnoreCase(jClassToAdd._package().name());
+        boolean notToAddJClassParametrized = jClassToAdd._package().name().equals("java.lang") || dto.getPackageName().equalsIgnoreCase(jClassParametrizedToAdd._package().name());
+        if (!notToAddJClass) {
+            imports.add(jClassToAdd.fullName());
+        logger.debug("({})import to add: {}", dto.getName(), jClassToAdd.fullName());
+        }
+        if (!notToAddJClassParametrized) {
+            imports.add(jClassParametrizedToAdd.fullName());
+        logger.debug("({})import parametrized to add: {}", dto.getName(), jClassParametrizedToAdd.fullName());
+        }       
+    }
+
+    private String getPackageName(String basePackage, String dtoPackage) {
+        if (dtoPackage == null || dtoPackage.isEmpty()) {
+            return basePackage;
+        }
+        return basePackage + "." + dtoPackage;
     }
 
 }

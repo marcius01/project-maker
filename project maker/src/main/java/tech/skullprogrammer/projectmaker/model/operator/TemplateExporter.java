@@ -19,6 +19,7 @@ import tech.skullprogrammer.projectmaker.Constants;
 import tech.skullprogrammer.projectmaker.error.ExportException;
 import tech.skullprogrammer.projectmaker.model.fm.DAOClass;
 import tech.skullprogrammer.projectmaker.model.fm.DAODataModels;
+import tech.skullprogrammer.projectmaker.model.fm.DTOClass;
 import tech.skullprogrammer.projectmaker.utility.Utility;
 
 public class TemplateExporter {
@@ -35,12 +36,28 @@ public class TemplateExporter {
             cfg.setLogTemplateExceptions(false);
             cfg.setWrapUncheckedExceptions(true);
             cfg.setFallbackOnNullLoopVariable(false);
+            cfg.setAutoEscapingPolicy(Configuration.DISABLE_AUTO_ESCAPING_POLICY);
         } catch (URISyntaxException | IOException ex) {
             throw new ExportException(ex);
         }
     }
 
-    public void exportFMDAOTemplateToFile(DAODataModels daoDataModel,String projectName, Path projectPath, Path sourceCodePath, Path resourcesPath, String persistencePackage) throws ExportException {
+    public void exportFMDTOTemplateToFile(Map<String, Map<String, Object>> dtosDataModel, Path sourceCodePath, String dtoPackage) throws ExportException {
+        try {
+            for (String dtoName : dtosDataModel.keySet()) {
+                Map<String, Object> root = dtosDataModel.get(dtoName);
+                DTOClass dtoClass = (DTOClass) root.get(Constants.DTO_DATA_MODEL);
+                Path packagePath = Utility.fromPackageToPath(dtoClass.getPackageName());
+                Path completePath = sourceCodePath.resolve(packagePath);
+                Files.createDirectories(completePath);
+                writeTemplateDAO("DTO.ftlh", completePath, dtoClass.getName(), root);
+            }
+        } catch (IOException | TemplateException ex) {
+            throw new ExportException(ex);
+        }
+    }
+
+    public void exportFMDAOTemplateToFile(DAODataModels daoDataModel, String projectName, Path projectPath, Path sourceCodePath, Path resourcesPath, String persistencePackage) throws ExportException {
         Path packagePath = Utility.fromPackageToPath(persistencePackage);
         Path completePath = sourceCodePath.resolve(packagePath);
         try {
