@@ -35,7 +35,7 @@ public class FMDataModelGenerator {
     public FMDataModelGenerator() {
     }
 
-    public Map<String, Map<String, Object>> generateDTODataModels(List<JCodeModel> models, Configuration configuration ) {
+    public Map<String, Map<String, Object>> generateDTODataModels(List<JCodeModel> models, List<String> managedBeans, Configuration configuration) {
         Map<String, Map<String, Object>> dtosRoots = new HashMap<>();
         for (JCodeModel codeModel : models) {
             Iterator<JPackage> packages = codeModel.packages();
@@ -56,14 +56,7 @@ public class FMDataModelGenerator {
                     Map<String, JFieldVar> fields = definedClass.fields();
                     for (String fieldName : fields.keySet()) {
                         JFieldVar fieldVar = fields.get(fieldName);
-//                        logger.debug(fieldVar.type().name() + " --> " + fieldVar.type().boxify()._package().name() + " - " + CodeModelUtility.extractBaseType(fieldVar));                        
-//                        String importToAdd = fieldVar.type().boxify()._package().name() + "." + CodeModelUtility.extractBaseType(fieldVar);
-//                        String importParametrizedToAdd = fieldVar.type().boxify()._package().name() + "." + CodeModelUtility.extractParametrizedType(fieldVar);
-                        addImports(imports, fieldVar, dto);
-
-//                        PropertyClass propertyClass = new PropertyClass(fieldVar.type().name(), fieldName, CodeModelUtility.extractParametrizedType(fieldVar));
-                        PropertyClass propertyClass = new PropertyClass(fieldVar.type().name(), fieldName, null);
-                        properties.add(propertyClass);
+                        addImportsAnProperty(imports, properties, managedBeans, fieldVar, dto);
                     }
                     dto.setImports(new ArrayList<>(imports));
                     root.put(Constants.DTO_DATA_MODEL, dto);
@@ -157,19 +150,26 @@ public class FMDataModelGenerator {
                 configurationDB.getDbUsername(), configurationDB.getDbPassword(), configurationDB.getDbDialect());
     }
 
-    private void addImports(Set<String> imports, JFieldVar fieldVar, DTOClass dto) {
+    private void addImportsAnProperty(Set<String> imports, List<PropertyClass> properties, List<String> managedBeans, JFieldVar fieldVar, DTOClass dto) {
         JClass jClassToAdd = CodeModelUtility.extractBaseType(fieldVar);
         JClass jClassParametrizedToAdd = CodeModelUtility.extractParametrizedType(fieldVar);
-        boolean notToAddJClass = jClassToAdd._package().name().equals("java.lang") || dto.getPackageName().equalsIgnoreCase(jClassToAdd._package().name());
-        boolean notToAddJClassParametrized = jClassToAdd._package().name().equals("java.lang") || dto.getPackageName().equalsIgnoreCase(jClassParametrizedToAdd._package().name());
-        if (!notToAddJClass) {
-            imports.add(jClassToAdd.fullName());
-        logger.debug("({})import to add: {}", dto.getName(), jClassToAdd.fullName());
+        addImport(managedBeans, jClassToAdd, dto, imports);
+        addImport(managedBeans, jClassParametrizedToAdd, dto, imports);
+        String cleanedType = cleanType(managedBeans, jClassToAdd, jClassParametrizedToAdd, fieldVar);
+        PropertyClass propertyClass = new PropertyClass(cleanedType, fieldVar.name(), null);
+        properties.add(propertyClass);
+        JClass parametrizedClass = CodeModelUtility.extractParametrizedType(fieldVar);
+
+    }
+
+    private void addImport(List<String> managedBeans, JClass jClassToAdd, DTOClass dto, Set<String> imports) {
+        if (!managedBeans.contains(jClassToAdd.name())) {
+            boolean notToAddJClass = jClassToAdd._package().name().equals("java.lang") || dto.getPackageName().equalsIgnoreCase(jClassToAdd._package().name());
+            if (!notToAddJClass) {
+                imports.add(jClassToAdd.fullName());
+                logger.debug("({})import to add: {}", dto.getName(), jClassToAdd.fullName());
+            }
         }
-        if (!notToAddJClassParametrized) {
-            imports.add(jClassParametrizedToAdd.fullName());
-        logger.debug("({})import parametrized to add: {}", dto.getName(), jClassParametrizedToAdd.fullName());
-        }       
     }
 
     private String getPackageName(String basePackage, String dtoPackage) {
@@ -177,6 +177,16 @@ public class FMDataModelGenerator {
             return basePackage;
         }
         return basePackage + "." + dtoPackage;
+    }
+
+    private String cleanType(List<String> managedBeans, JClass jClassToAdd, JClass jClassParametrizedToAdd, JFieldVar fieldVar) {
+        if (managedBeans.contains(jClassToAdd.name())) {
+            return Constants.PREFIX_DTO + jClassToAdd.name();
+        }
+        if (managedBeans.contains(jClassParametrizedToAdd.name())) {
+            return jClassToAdd.name() + "<" + Constants.PREFIX_DTO + jClassParametrizedToAdd.name() + ">";
+        }
+        return fieldVar.type().name();
     }
 
 }

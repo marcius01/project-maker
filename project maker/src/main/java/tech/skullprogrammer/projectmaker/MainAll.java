@@ -6,6 +6,7 @@ import com.sun.codemodel.JPackage;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.tuple.Pair;
@@ -57,7 +58,7 @@ public class MainAll {
         System.out.println("Export Entities - Completed!");
         templateExporter.exportFMDAOTemplateToFile(daoDataModel,configuration.getTemplateOutputName(), projectFolder, sourceFolder, resourcesFolder, persistencePackage);
         System.out.println("Export DAOs - Completed!");
-        Map<String, Map<String, Object>> dtoDataModels = fmDataModelGenerator.generateDTODataModels(models, configuration);
+        Map<String, Map<String, Object>> dtoDataModels = fmDataModelGenerator.generateDTODataModels(models, new ArrayList<String>(cleanedStructure.keySet()), configuration);
         System.out.println("Generation DTOs DataModels - Completed!");
         templateExporter.exportFMDTOTemplateToFile(dtoDataModels, sourceFolder, persistencePackage);
         System.out.println("Export DTOs - Completed!");
