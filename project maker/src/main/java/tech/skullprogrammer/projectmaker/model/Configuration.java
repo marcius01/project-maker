@@ -18,12 +18,13 @@ public class Configuration {
     private String daoExceptionName;
     private String daoExceptionPackage;
     private String dtoPackage;
+    private String endpointPackageName;
     private ConfigurationDB configurationDB;
 
     public Configuration(String packageRootName, String packageModelName, String packagePersistenceName, String templatePath, String templateOutputName,
             String outputPath, String jsonFolderPath, Boolean daoParametrized, String extensionName, String extensionPackage, Boolean daoInterfaceParametrized,
             String daoInterfaceExtensionName, String daoInterfaceExtensionPackage, String daoExceptionName, String daoExceptionPackage, 
-            String dtoPackage, ConfigurationDB configurationDB) {
+            String dtoPackage, String endpointPackageName, ConfigurationDB configurationDB) {
         this.packageRootName = packageRootName;
         this.packageModelName = packageModelName;
         this.packagePersistenceName = packagePersistenceName;
@@ -40,6 +41,7 @@ public class Configuration {
         this.daoExceptionName = daoExceptionName;
         this.daoExceptionPackage = daoExceptionPackage;
         this.dtoPackage = dtoPackage;
+        this.endpointPackageName = endpointPackageName;
         this.configurationDB = configurationDB;
     }
 
@@ -177,6 +179,14 @@ public class Configuration {
 
     public void setConfigurationDB(ConfigurationDB configurationDB) {
         this.configurationDB = configurationDB;
+    }
+
+    public String getEndpointPackageName() {
+        return endpointPackageName;
+    }
+
+    public void setEndpointPackageName(String endpointPackageName) {
+        this.endpointPackageName = endpointPackageName;
     }
     
 }

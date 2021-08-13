@@ -1,9 +1,7 @@
 package tech.skullprogrammer.projectmaker.model.fm;
 
-public class DAOClass {
+public class DAOClass extends AbstractClass{
 
-    private String packageName;
-    private String name;
     private String interfaceName;
     private String interfaceExtensionName;
     private String interfaceExtensionPackage;
@@ -12,22 +10,6 @@ public class DAOClass {
     private String exceptionName;
     private String exceptionPackage;
     private boolean parametrized;
-
-    public String getPackageName() {
-        return packageName;
-    }
-
-    public void setPackageName(String packageName) {
-        this.packageName = packageName;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getInterfaceName() {
         return interfaceName;

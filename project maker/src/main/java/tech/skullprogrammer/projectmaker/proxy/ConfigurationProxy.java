@@ -57,6 +57,7 @@ public class ConfigurationProxy {
             String packageRootName = proprieta.getProperty("package.root.name");
             String packageModelName = proprieta.getProperty("package.model.name");
             String packagePersistenceName = proprieta.getProperty("package.persistence.name");
+            String endpointPackageName = proprieta.getProperty("package.endpoint.name");
             String jsonFolderPath = proprieta.getProperty("json.folder.path");
             String templatePath = proprieta.getProperty("template.path");
             String templateOutputName = proprieta.getProperty("template.output.name");
@@ -74,7 +75,7 @@ public class ConfigurationProxy {
             ConfigurationDB configurationDB = dbProject ? ComponentFactory.getInstance().getConfigurationDBProxy().getConfiguration() : null;
             Configuration config = new Configuration(packageRootName, packageModelName, packagePersistenceName, templatePath, templateOutputName,
                     outputPath, jsonFolderPath, daoParametrized, extensionName, extensionPackage, daoInterfaceParametrized, daoInterfaceExtensionName,
-                    daoInterfaceExtensionPackage, daoExceptionName, daoExceptionPackage, dtoPackage,
+                    daoInterfaceExtensionPackage, daoExceptionName, daoExceptionPackage, dtoPackage, endpointPackageName,
                     configurationDB);
             logger.info("Configuration loaded: {}", config);
             return config;

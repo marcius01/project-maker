@@ -91,12 +91,25 @@ public class Utility {
     }
 
     public static Path fromPackageToPath(String packageString) {
-        String[] tokens = packageString.split("\\."); 
+        String[] tokens = packageString.split("\\.");
         Path path = Paths.get("");
         for (String token : tokens) {
             path = path.resolve(token);
         }
         return path;
-    }    
-    
+    }
+
+    public static String createPackage(String... tokens) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < tokens.length; i++) {
+            String token = tokens[i];
+            if (i == 0) {
+                if (token.isEmpty()) throw new IllegalArgumentException("first part of the package can't be empty");
+                result.append(token);
+            } else if (!token.isEmpty()){
+                result.append(".").append(token);
+            }
+        }
+        return result.toString();
+    }
 }

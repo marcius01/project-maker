@@ -1,6 +1,5 @@
 package tech.skullprogrammer.projectmaker.model.operator;
 
-import com.google.common.collect.Maps;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -18,8 +17,8 @@ import org.slf4j.LoggerFactory;
 import tech.skullprogrammer.projectmaker.Constants;
 import tech.skullprogrammer.projectmaker.error.ExportException;
 import tech.skullprogrammer.projectmaker.model.fm.DAOClass;
-import tech.skullprogrammer.projectmaker.model.fm.DAODataModels;
-import tech.skullprogrammer.projectmaker.model.fm.DTOClass;
+import tech.skullprogrammer.projectmaker.model.fm.FMDataModels;
+import tech.skullprogrammer.projectmaker.model.fm.IClass;
 import tech.skullprogrammer.projectmaker.utility.Utility;
 
 public class TemplateExporter {
@@ -42,24 +41,31 @@ public class TemplateExporter {
         }
     }
 
-    public void exportFMDTOTemplateToFile(Map<String, Map<String, Object>> dtosDataModel, Path sourceCodePath, String dtoPackage) throws ExportException {
+    private void exportFMTemplateToFile(Map<String, Map<String, Object>> dataModel, Path sourceCodePath, String templateFile, String dataModelKey) throws ExportException {
         try {
-            for (String dtoName : dtosDataModel.keySet()) {
-                Map<String, Object> root = dtosDataModel.get(dtoName);
-                DTOClass dtoClass = (DTOClass) root.get(Constants.DTO_DATA_MODEL);
+            for (String dtoName : dataModel.keySet()) {
+                Map<String, Object> root = dataModel.get(dtoName);
+                IClass dtoClass = (IClass) root.get(dataModelKey);
                 Path packagePath = Utility.fromPackageToPath(dtoClass.getPackageName());
                 Path completePath = sourceCodePath.resolve(packagePath);
                 Files.createDirectories(completePath);
-                writeTemplateDAO("DTO.ftlh", completePath, dtoClass.getName(), root);
+                writeTemplateDAO(templateFile, completePath, dtoClass.getName(), root);
             }
         } catch (IOException | TemplateException ex) {
             throw new ExportException(ex);
         }
     }
 
-    public void exportFMDAOTemplateToFile(DAODataModels daoDataModel, String projectName, Path projectPath, Path sourceCodePath, Path resourcesPath, String persistencePackage) throws ExportException {
-        Path packagePath = Utility.fromPackageToPath(persistencePackage);
-        Path completePath = sourceCodePath.resolve(packagePath);
+    public void exportFMEndpointTemplateToFile(FMDataModels daoDataModel, Path sourceCodePath) throws ExportException {
+        exportFMTemplateToFile(daoDataModel.getEndpoints(), sourceCodePath, "RestEndpoint_RESTLET_ProjectSpecific.ftlh", Constants.ENDPOINT_DATA_MODEL);
+    }
+
+    public void exportFMDTOTemplateToFile(FMDataModels daoDataModel, Path sourceCodePath) throws ExportException {
+        exportFMTemplateToFile(daoDataModel.getEndpoints(), sourceCodePath, "DTO.ftlh", Constants.DTO_DATA_MODEL);
+    }
+
+    public void exportFMDAOTemplateToFile(FMDataModels daoDataModel, String projectName, Path projectPath, Path sourceCodePath, Path resourcesPath, Path persistencePath) throws ExportException {
+        Path completePath = sourceCodePath.resolve(persistencePath);
         try {
             for (String daoName : daoDataModel.getDaosRoots().keySet()) {
                 Map<String, Object> root = daoDataModel.getDaosRoots().get(daoName);
