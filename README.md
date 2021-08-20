@@ -159,14 +159,14 @@ It is possible to build your own versions of the templates in question, knowing 
 ##### EndpointClass #####
 ```
 endpoint
- -	(String) packageName
- -	(String) name
+ -  (String) packageName
+ -  (String) name
  -* (String) imports
- - 	(String) rootPackage
- - 	(String) requestPath
- - 	(DAOClass) associatedDAO
- - 	(EntityClass) associatedEntity
- - 	(DTOClass) associatedDTO
+ -  (String) rootPackage
+ -  (String) requestPath
+ -  (DAOClass) associatedDAO
+ -  (EntityClass) associatedEntity
+ -  (DTOClass) associatedDTO
 ```
 ##### DAOClass #####
 ```
@@ -183,8 +183,8 @@ endpoint
 ```
 ##### EntityClass #####
 ```
- -	(String) packageName
- -	(String) name
+ -  (String) packageName
+ -  (String) name
  -* (SearchType) uniqueSearchs
 ```
 ##### SearchType #####
@@ -195,7 +195,7 @@ endpoint
 ```
 ##### DTOClass #####
 ```
- -	(String) packageName
+ -  (String) packageName
  -  (String) name
  -* (String> imports    
  -* (PropertyClass) properties
@@ -210,7 +210,7 @@ endpoint
 #### For Router ####
 ##### RouterClass #####
 ```
- -	(String) packageName
+ -  (String) packageName
  -  (String) name
  -  (String) rootPackage;
  -* (EndpointClass) endpoints;
