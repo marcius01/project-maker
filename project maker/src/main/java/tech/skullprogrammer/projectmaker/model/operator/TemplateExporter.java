@@ -19,6 +19,7 @@ import tech.skullprogrammer.projectmaker.error.ExportException;
 import tech.skullprogrammer.projectmaker.model.fm.DAOClass;
 import tech.skullprogrammer.projectmaker.model.fm.FMDataModels;
 import tech.skullprogrammer.projectmaker.model.fm.IClass;
+import tech.skullprogrammer.projectmaker.model.fm.RouterClass;
 import tech.skullprogrammer.projectmaker.utility.Utility;
 
 public class TemplateExporter {
@@ -56,15 +57,46 @@ public class TemplateExporter {
         }
     }
 
-    public void exportFMEndpointTemplateToFile(FMDataModels daoDataModel, Path sourceCodePath) throws ExportException {
-        exportFMTemplateToFile(daoDataModel.getEndpoints(), sourceCodePath, "RestEndpoint_RESTLET_ProjectSpecific.ftlh", Constants.ENDPOINT_DATA_MODEL);
+    public void exportFMEndpointTemplateToFile(FMDataModels fmDataModel, Path sourceCodePath) throws ExportException {
+        exportFMTemplateToFile(fmDataModel.getEndpoints(), sourceCodePath, "RestEndpoint_RESTLET_ProjectSpecific.ftlh", Constants.ENDPOINT_DATA_MODEL);
     }
 
-    public void exportFMDTOTemplateToFile(FMDataModels daoDataModel, Path sourceCodePath) throws ExportException {
-        exportFMTemplateToFile(daoDataModel.getEndpoints(), sourceCodePath, "DTO.ftlh", Constants.DTO_DATA_MODEL);
+    public void exportFMDTOTemplateToFile(FMDataModels fmDataModel, Path sourceCodePath) throws ExportException {
+//        exportFMTemplateToFile(daoDataModel.getEndpoints(), sourceCodePath, "DTO.ftlh", Constants.DTO_DATA_MODEL);
+        exportFMTemplateToFile(fmDataModel.getDtosRoots(), sourceCodePath, "DTO.ftlh", Constants.DTO_DATA_MODEL);
     }
 
-    public void exportFMDAOTemplateToFile(FMDataModels daoDataModel, String projectName, Path projectPath, Path sourceCodePath, Path resourcesPath, Path persistencePath) throws ExportException {
+    public void exportFMSettingsGradleTemplateToFile(String projectName, Path projectPath) throws ExportException {
+        try {
+            writeTemplate("settings.gradle.ftlh", "settings.gradle", Collections.singletonMap("projectName", projectName), projectPath);            
+        } catch (IOException | TemplateException ex) {
+            throw new ExportException(ex);
+        }
+    }
+    
+    public void exportFMRouterTemplateToFile(FMDataModels fmDataModel, Path sourceCodePath) throws ExportException {
+        try {
+            Map<String, Object> routerRoot = fmDataModel.getRouterRoot();
+            RouterClass routerClass = ((RouterClass) routerRoot.get(Constants.ROUTER_DATA_MODEL));
+            String routerName = routerClass.getName();
+            Path packagePath = Utility.fromPackageToPath(routerClass.getPackageName());
+            Path completePath = sourceCodePath.resolve(packagePath);
+            writeTemplate("ApplicationRouter_ROUTER_ProjectSpecific.ftlh", routerName + ".java", routerRoot, completePath);
+        } catch (IOException | TemplateException ex) {
+            throw new ExportException(ex);
+        }
+    }
+    
+    public void exportFMWebTemplateToFile(FMDataModels fmDataModel, Path webPath) throws ExportException {
+        try {
+            Map<String, Object> projectRoot = fmDataModel.getProjectRoot();
+            writeTemplate("web.xml_ProjectSpecific.ftlh", "web.xml", projectRoot, webPath);
+        } catch (IOException | TemplateException ex) {
+            throw new ExportException(ex);
+        }
+    }
+
+    public void exportFMDAOTemplateToFile(FMDataModels daoDataModel, Path projectPath, Path sourceCodePath, Path resourcesPath, Path persistencePath) throws ExportException {
         Path completePath = sourceCodePath.resolve(persistencePath);
         try {
             for (String daoName : daoDataModel.getDaosRoots().keySet()) {
@@ -75,8 +107,7 @@ public class TemplateExporter {
                 writeTemplateDAO("IDAOEntity.ftlh", completePath, daoClass.getInterfaceName(), root);
             }
             writeTemplateConfiguration("hibernate.cfg.ftlh", "hibernate.cfg.xml", daoDataModel.getConfigurationRoot(), resourcesPath);
-            writeTemplateConfiguration("db.properties.ftlh", "db.properties", daoDataModel.getConfigurationRoot(), projectPath);
-            writeTemplate("settings.gradle.ftlh", "settings.gradle", Collections.singletonMap("projectName", projectName), projectPath);
+            writeTemplateConfiguration("db.properties.ftlh", "db.properties", daoDataModel.getConfigurationRoot(), projectPath);            
         } catch (IOException | TemplateException ex) {
             throw new ExportException(ex);
         }

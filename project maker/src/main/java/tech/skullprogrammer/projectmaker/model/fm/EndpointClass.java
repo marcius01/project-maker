@@ -4,10 +4,11 @@ import java.util.List;
 
 public class EndpointClass extends AbstractClass{
     private List<String> imports;    
-    private String mainPackage;
+    private String rootPackage;
     private DAOClass associatedDAO;
     private EntityClass associatedEntity;
     private DTOClass associatedDTO;
+    private String requestPath;
 
     public List<String> getImports() {
         return imports;
@@ -17,12 +18,12 @@ public class EndpointClass extends AbstractClass{
         this.imports = imports;
     }
 
-    public String getMainPackage() {
-        return mainPackage;
+    public String getRootPackage() {
+        return rootPackage;
     }
 
-    public void setMainPackage(String mainPackage) {
-        this.mainPackage = mainPackage;
+    public void setRootPackage(String rootPackage) {
+        this.rootPackage = rootPackage;
     }
     
     public DAOClass getAssociatedDAO() {
@@ -48,6 +49,14 @@ public class EndpointClass extends AbstractClass{
 
     public void setAssociatedEntity(EntityClass associatedEntity) {
         this.associatedEntity = associatedEntity;
+    }
+
+    public String getRequestPath() {
+        return requestPath;
+    }
+
+    public void setRequestPath(String requestPath) {
+        this.requestPath = requestPath;
     }
 
 }

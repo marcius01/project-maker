@@ -33,13 +33,15 @@ public class MainAll {
         Configuration configuration = ComponentFactory.getInstance().getConfigurationProxy().getConfiguration();
         Path templatePath = Paths.get(configuration.getTemplatePath());
         Path outputPath = Paths.get(configuration.getOutputPath());
-        Utility.unzipFolderZip4j(templatePath, outputPath, configuration.getTemplateOutputName(), true);
+//        Utility.unzipFolderZip4j(templatePath, outputPath, configuration.getTemplateOutputName(), true);
+        Utility.unzipFolder(templatePath, outputPath, configuration.getTemplateOutputName(), true);
         PojoExporter pojoExporter = new PojoExporter();
         TemplateExporter templateExporter = new TemplateExporter();
         String modelPackage = Utility.createPackage(configuration.getPackageRootName(), configuration.getPackageModelName());
         Path projectFolder = Paths.get(configuration.getOutputPath(), configuration.getTemplateOutputName());
         Path sourceFolder = projectFolder.resolve("src").resolve("main").resolve("java");
         Path resourcesFolder = projectFolder.resolve("src").resolve("main").resolve("resources");
+        Path webFolder = projectFolder.resolve("src").resolve("main").resolve("webapp").resolve("WEB-INF");
         String persistencePackage = Utility.createPackage(configuration.getPackageRootName(), configuration.getPackagePersistenceName());
         Path persistenceFolder = Utility.fromPackageToPath(persistencePackage);
 //        pojoExporter.exportFromJsonToPojoFile(configuration.getJsonFolderPath(), modelPackage, sourceFolder.toString());
@@ -58,7 +60,9 @@ public class MainAll {
         System.out.println("Generation DAOs DataModels - Completed!");
         pojoExporter.exportJCodeModelToFile(models, sourceFolder.toString());
         System.out.println("Export Entities - Completed!");
-        templateExporter.exportFMDAOTemplateToFile(fmDataModel, configuration.getTemplateOutputName(), projectFolder, sourceFolder, resourcesFolder, persistenceFolder);
+        templateExporter.exportFMSettingsGradleTemplateToFile(configuration.getTemplateOutputName(), projectFolder);
+        System.out.println("Export settings.gradle - Completed!");
+        templateExporter.exportFMDAOTemplateToFile(fmDataModel, projectFolder, sourceFolder, resourcesFolder, persistenceFolder);
         System.out.println("Export DAOs - Completed!");
 //        Map<String, Map<String, Object>> dtoDataModels = fmDataModelGenerator.generateDTODataModels(models, new ArrayList<String>(cleanedStructure.keySet()), configuration);
 //        System.out.println("Generation DTOs DataModels - Completed!");
@@ -66,6 +70,10 @@ public class MainAll {
         System.out.println("Export DTOs - Completed!");
         templateExporter.exportFMEndpointTemplateToFile(fmDataModel, sourceFolder);
         System.out.println("Export Endpoint - Completed!");
+        templateExporter.exportFMRouterTemplateToFile(fmDataModel, sourceFolder);
+        System.out.println("Export Router - Completed!");
+        templateExporter.exportFMWebTemplateToFile(fmDataModel, webFolder);
+        System.out.println("Export web.xml - Completed!");
 
     }
 }

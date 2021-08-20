@@ -9,7 +9,7 @@ import org.restlet.resource.ServerResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 <#-- Lines below are specific to the project -->
-import ${endpoint.mainPackage}.utility.RestUtility;
+import ${endpoint.rootPackage}.utility.RestUtility;
 <#-- 
 import it.unibas.sondaggi.rest.persistenza.hibernate.DAOAziendaHibernate;
 import it.unibas.sondaggi.rest.persistenza.DAOException;

@@ -8,12 +8,14 @@ import com.sun.codemodel.JFieldVar;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JPackage;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.skullprogrammer.projectmaker.Constants;
@@ -25,7 +27,9 @@ import tech.skullprogrammer.projectmaker.model.fm.DBClass;
 import tech.skullprogrammer.projectmaker.model.fm.DTOClass;
 import tech.skullprogrammer.projectmaker.model.fm.EndpointClass;
 import tech.skullprogrammer.projectmaker.model.fm.EntityClass;
+import tech.skullprogrammer.projectmaker.model.fm.ProjectClass;
 import tech.skullprogrammer.projectmaker.model.fm.PropertyClass;
+import tech.skullprogrammer.projectmaker.model.fm.RouterClass;
 import tech.skullprogrammer.projectmaker.model.fm.SearchType;
 import tech.skullprogrammer.projectmaker.utility.CodeModelUtility;
 import tech.skullprogrammer.projectmaker.utility.Utility;
@@ -37,35 +41,17 @@ public class FMDataModelGenerator {
     public FMDataModelGenerator() {
     }
 
-//    public Map<String, Map<String, Object>> generateDTODataModels(List<JCodeModel> models, List<String> managedBeans, Configuration configuration) {
-//        Map<String, Map<String, Object>> dtosRoots = new HashMap<>();
-//        for (JCodeModel codeModel : models) {
-//            Iterator<JPackage> packages = codeModel.packages();
-//            while (packages.hasNext()) {
-//                JPackage jPackage = packages.next();
-////                logger.debug("package name: {}", jPackage.name());
-//                Iterator<JDefinedClass> classes = jPackage.classes();
-//                while (classes.hasNext()) {
-//                    Map<String, Object> root = new HashMap<>();
-//                    JDefinedClass definedClass = classes.next();
-//
-//                    DTOClass dto = createDTOTreeHahs(jPackage, configuration, definedClass, managedBeans);
-//                    root.put(Constants.DTO_DATA_MODEL, dto);
-//                    dtosRoots.put(dto.getName(), root);
-//                }
-//            }
-//        }
-//        return dtosRoots;
-//    }
     public FMDataModels generateDAODataModels(List<JCodeModel> models, Configuration configuration, List<String> managedBeans) {
         String modelPackage = Utility.createPackage(configuration.getPackageRootName(),configuration.getPackageModelName());
         String persistencePackage = Utility.createPackage(configuration.getPackageRootName() ,configuration.getPackagePersistenceName());
         String endpointPackage = Utility.createPackage(configuration.getPackageRootName(), configuration.getEndpointPackageName());
+        String routerPackage = Utility.createPackage(configuration.getPackageRootName(), configuration.getRouterPackageName());
         Map<String, Map<String, Object>> daosRoots = new HashMap<>();
         Map<String, Map<String, Object>> dtosRoots = new HashMap<>();
-        Map<String, Map<String, Object>> endpoints = new HashMap<>();
+        Map<String, Map<String, Object>> endpointsRoots = new HashMap<>();
         Map<String, Object> configurationRoot = new HashMap<>();
         List<EntityClass> entities = new ArrayList();
+        List<EndpointClass> endpoints = new ArrayList();
         for (JCodeModel codeModel : models) {
             Iterator<JPackage> packages = codeModel.packages();
             while (packages.hasNext()) {
@@ -85,14 +71,28 @@ public class FMDataModelGenerator {
                     daosRoots.put(dao.getName(), root);
                     entities.add(entity);
                     dtosRoots.put(dto.getName(), root);
-                    endpoints.put(endpoint.getName(), root);
+                    endpointsRoots.put(endpoint.getName(), root);
+                    endpoints.add(endpoint);
                 }
             }
         }
         DBClass dBClass = createDBClass(configuration);
         configurationRoot.put(Constants.DB_DATA_MODEL, dBClass);
         configurationRoot.put(Constants.ENTITIES_DATA_MODEL, entities);
-        return new FMDataModels(daosRoots, dtosRoots, configurationRoot, endpoints);
+        RouterClass routerClass = createRouterClass(endpoints, routerPackage,configuration);
+        Map<String, Object> routerRoot = Collections.singletonMap(Constants.ROUTER_DATA_MODEL, routerClass);
+        Map<String, Object> projectRoot = createProjectTreeHash(configuration, routerClass);
+        return new FMDataModels(daosRoots, dtosRoots, configurationRoot, endpointsRoots, routerRoot, projectRoot);
+    }
+
+    private Map<String, Object> createProjectTreeHash(Configuration configuration, RouterClass routerClass) {
+        ProjectClass projectClass = new ProjectClass();
+        projectClass.setName(configuration.getTemplateOutputName());
+        projectClass.setDescription(configuration.getTemplateOutputDescription());
+        Map<String, Object> projectRoot = new HashMap();
+        projectRoot.put(Constants.ROUTER_DATA_MODEL, routerClass);
+        projectRoot.put(Constants.PROJECT_DATA_MODEL, projectClass);
+        return projectRoot;
     }
 
     private DTOClass createDTOTreeHahs(JPackage jPackage, Configuration configuration, JDefinedClass definedClass, List<String> managedBeans) {
@@ -207,7 +207,7 @@ public class FMDataModelGenerator {
 
     private EndpointClass createEndpointTreeHash(DAOClass dao, EntityClass entity, DTOClass dto, String endpointPackage, String rootPackage) {
         EndpointClass endpointClass = new EndpointClass();
-        endpointClass.setMainPackage(rootPackage);
+        endpointClass.setRootPackage(rootPackage);
         endpointClass.setAssociatedDAO(dao);
 //        endpointClass.setPackageName(Utility.createPackage(configuration.getPackageRootName(), configuration.getEndpointPackageName()));
         endpointClass.setPackageName(endpointPackage);
@@ -221,7 +221,17 @@ public class FMDataModelGenerator {
         imports.add(Utility.createPackage(dto.getPackageName(), dto.getName()));
         endpointClass.setImports(new ArrayList<>(imports));
         endpointClass.setAssociatedDTO(dto);
+        endpointClass.setRequestPath(Constants.PREFIX_ENDOPOINT_REQUEST_PATH + StringUtils.uncapitalize(entity.getName()));
         return endpointClass;
+    }
+
+    private RouterClass createRouterClass(List<EndpointClass> endpoints, String routerPackage, Configuration configuration) {
+        RouterClass result =  new RouterClass();
+        result.setEndpoints(endpoints);
+        result.setPackageName(routerPackage);
+        result.setName(configuration.getRouterName());
+        result.setRootPackage(configuration.getPackageRootName());
+        return result;
     }
 
 }

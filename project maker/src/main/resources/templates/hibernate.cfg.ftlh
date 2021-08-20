@@ -8,7 +8,7 @@
         <property name="hibernate.jdbc.use_streams_for_binary">true</property>
         <property name="current_session_context_class">thread</property>
         <property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
-        <property name="hibernate.connection.url">jdbc:${db.host}://${db.host}:${db.port}/${db.name}</property>
+        <property name="hibernate.connection.url">jdbc:${db.type}://${db.host}:${db.port}/${db.name}</property>
         <property name="hibernate.connection.username">${db.username}</property>
         <property name="hibernate.connection.password">${db.password}</property>
         

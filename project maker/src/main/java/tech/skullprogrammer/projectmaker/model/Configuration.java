@@ -19,12 +19,15 @@ public class Configuration {
     private String daoExceptionPackage;
     private String dtoPackage;
     private String endpointPackageName;
+    private String routerPackageName;
+    private String routerName;
+    private String templateOutputDescription;
     private ConfigurationDB configurationDB;
 
     public Configuration(String packageRootName, String packageModelName, String packagePersistenceName, String templatePath, String templateOutputName,
             String outputPath, String jsonFolderPath, Boolean daoParametrized, String extensionName, String extensionPackage, Boolean daoInterfaceParametrized,
             String daoInterfaceExtensionName, String daoInterfaceExtensionPackage, String daoExceptionName, String daoExceptionPackage, 
-            String dtoPackage, String endpointPackageName, ConfigurationDB configurationDB) {
+            String dtoPackage, String endpointPackageName, String routerPackageName,  String routerName, String templateOutputDescription, ConfigurationDB configurationDB) {
         this.packageRootName = packageRootName;
         this.packageModelName = packageModelName;
         this.packagePersistenceName = packagePersistenceName;
@@ -42,6 +45,9 @@ public class Configuration {
         this.daoExceptionPackage = daoExceptionPackage;
         this.dtoPackage = dtoPackage;
         this.endpointPackageName = endpointPackageName;
+        this.routerPackageName = routerPackageName;
+        this.routerName = routerName;
+        this.templateOutputDescription = templateOutputDescription;
         this.configurationDB = configurationDB;
     }
 
@@ -187,6 +193,30 @@ public class Configuration {
 
     public void setEndpointPackageName(String endpointPackageName) {
         this.endpointPackageName = endpointPackageName;
+    }
+
+    public String getRouterPackageName() {
+        return routerPackageName;
+    }
+
+    public void setRouterPackageName(String routerPackageName) {
+        this.routerPackageName = routerPackageName;
+    }
+
+    public String getRouterName() {
+        return routerName;
+    }
+
+    public void setRouterName(String routerName) {
+        this.routerName = routerName;
+    }
+
+    public String getTemplateOutputDescription() {
+        return templateOutputDescription;
+    }
+
+    public void setTemplateOutputDescription(String templateOutputDescription) {
+        this.templateOutputDescription = templateOutputDescription;
     }
     
 }

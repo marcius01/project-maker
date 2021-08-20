@@ -61,6 +61,7 @@ public class ConfigurationProxy {
             String jsonFolderPath = proprieta.getProperty("json.folder.path");
             String templatePath = proprieta.getProperty("template.path");
             String templateOutputName = proprieta.getProperty("template.output.name");
+            String templateOutputDescription = proprieta.getProperty("template.output.description");
             String outputPath = proprieta.getProperty("output.path");
             Boolean daoParametrized = Boolean.parseBoolean(proprieta.getProperty("datamodel.dao.parametrized"));
             String extensionName = proprieta.getProperty("datamodel.dao.extension.name");
@@ -72,10 +73,13 @@ public class ConfigurationProxy {
             String daoExceptionPackage = proprieta.getProperty("datamodel.dao.exception.package");
             Boolean dbProject = Boolean.parseBoolean(proprieta.getProperty("db.project"));
             String dtoPackage = proprieta.getProperty("datamodel.dto.package");
+            String routerPackage = proprieta.getProperty("datamodel.router.package");
+            String routerName = proprieta.getProperty("datamodel.router.name");
             ConfigurationDB configurationDB = dbProject ? ComponentFactory.getInstance().getConfigurationDBProxy().getConfiguration() : null;
             Configuration config = new Configuration(packageRootName, packageModelName, packagePersistenceName, templatePath, templateOutputName,
                     outputPath, jsonFolderPath, daoParametrized, extensionName, extensionPackage, daoInterfaceParametrized, daoInterfaceExtensionName,
-                    daoInterfaceExtensionPackage, daoExceptionName, daoExceptionPackage, dtoPackage, endpointPackageName,
+                    daoInterfaceExtensionPackage, daoExceptionName, daoExceptionPackage, dtoPackage, endpointPackageName, routerPackage, routerName,
+                    templateOutputDescription,
                     configurationDB);
             logger.info("Configuration loaded: {}", config);
             return config;
