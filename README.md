@@ -11,10 +11,14 @@ Project maker uses FreeMarker for the generation of templates, this allows the e
 The library is not yet available on maven central, for this reason at this initial stage it is necessary to download the project and generate the jar if necessary. Alternatively, it is possible to directly depend on the project.
 
 ## Usage
-For some easy examples of use it is possible to analyze the package "example"
+For some easy examples of use it is possible to analyze the package "example" in src. 
 
 ```java
 ```
+
+Instead in the resource/example folder there are some Json examples and a template project.
+
+
 
 ## Configuration
 To use the Project Maker it is necessary to configure various aspects, which concern Json, project characteristics, templates
