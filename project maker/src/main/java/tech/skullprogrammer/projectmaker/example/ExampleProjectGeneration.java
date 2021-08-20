@@ -1,4 +1,4 @@
-package tech.skullprogrammer.projectmaker;
+package tech.skullprogrammer.projectmaker.example;
 
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
@@ -22,15 +22,19 @@ import tech.skullprogrammer.projectmaker.model.operator.TemplateExporter;
 import tech.skullprogrammer.projectmaker.proxy.ComponentFactory;
 import tech.skullprogrammer.projectmaker.utility.Utility;
 
-public class MainAll {
+public class ExampleProjectGeneration {
 
     public static void main(String[] args) throws OperatorException, IOException, ExportException {
-        new MainAll().execute();
+        new ExampleProjectGeneration().execute();
     }
 
     private void execute() throws OperatorException, IOException, ExportException {
 
+//        String configFilename = "/Temp/Development/project maker/src/main/resources/config.properties";
+//        String configDBFilename = "/Temp/Development/project-maker/project maker/src/main/resources/config_db.properties";
+//        ComponentFactory.getInstance().configurePaths(configFilename, configDBFilename);
         Configuration configuration = ComponentFactory.getInstance().getConfigurationProxy().getConfiguration();
+        
         Path templatePath = Paths.get(configuration.getTemplatePath());
         Path outputPath = Paths.get(configuration.getOutputPath());
 //        Utility.unzipFolderZip4j(templatePath, outputPath, configuration.getTemplateOutputName(), true);

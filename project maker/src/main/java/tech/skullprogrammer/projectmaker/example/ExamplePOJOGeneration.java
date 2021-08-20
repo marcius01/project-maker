@@ -1,4 +1,4 @@
-package tech.skullprogrammer.projectmaker;
+package tech.skullprogrammer.projectmaker.example;
 
 import com.sun.codemodel.JCodeModel;
 import java.io.File;
@@ -8,7 +8,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import org.jsonschema2pojo.DefaultGenerationConfig;
 import org.jsonschema2pojo.GenerationConfig;
-import org.jsonschema2pojo.Jackson2Annotator;
 import org.jsonschema2pojo.NoopAnnotator;
 import org.jsonschema2pojo.SchemaGenerator;
 import org.jsonschema2pojo.SchemaMapper;
@@ -17,12 +16,12 @@ import org.jsonschema2pojo.SourceType;
 import org.jsonschema2pojo.rules.RuleFactory;
 import tech.skullprogrammer.projectmaker.utility.Utility;
 
-public class MainPojo {
+public class ExamplePOJOGeneration {
 
     public static void main(String[] args) throws URISyntaxException, MalformedURLException, IOException {
         JCodeModel codeModel = new JCodeModel();
 
-        URL source = (new Utility().getFileFromResource("json/utente.json")).toURI().toURL();
+        URL source = (new Utility().getFileFromResource("json/user.json")).toURI().toURL();
         System.out.println("URL -> " + source.toString());
 
         GenerationConfig config = new DefaultGenerationConfig() {
@@ -62,8 +61,8 @@ public class MainPojo {
         SchemaMapper mapper = new SchemaMapper(new RuleFactory(config, new NoopAnnotator(), new SchemaStore()), new SchemaGenerator());
 
 //        SchemaMapper mapper = new SchemaMapper(new RuleFactory(config, new Jackson2Annotator(config), new SchemaStore()), new SchemaGenerator());
-        mapper.generate(codeModel, "Utente", "tech.skullprogrammer.project.model", source);
-        File toFile = new File("/Temp/Sviluppo/maker/");
+        mapper.generate(codeModel, "User", "tech.skullprogrammer.project.model", source);
+        File toFile = new File("/Temp/Develop/maker/");
         codeModel.build(toFile);
         System.out.println("-> " + toFile.getAbsolutePath());
 

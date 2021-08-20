@@ -1,5 +1,6 @@
 package tech.skullprogrammer.projectmaker.proxy;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.Properties;
@@ -45,12 +46,13 @@ public class ConfigurationDBProxy {
 
     private ConfigurationDB loadConfiguration(String fileName) {
         InputStream stream = null;
-        stream = this.getClass().getResourceAsStream(fileName);
-        if (stream == null) {
-            throw new DAOException("Impossible to load configuration file");
-        }
         try {
-            stream = this.getClass().getResourceAsStream(fileName);
+//            stream = this.getClass().getResourceAsStream(fileName);
+            stream = new FileInputStream(fileName);
+            if (stream == null) {
+                throw new DAOException("Impossible to load configuration file");
+            }
+//            stream = this.getClass().getResourceAsStream(fileName);
             Properties proprieta = new Properties();
             proprieta.load(stream);
             String dbType = proprieta.getProperty("db.type");
@@ -64,7 +66,7 @@ public class ConfigurationDBProxy {
             String dbPassword = proprieta.getProperty("db.password");
             String dbDialect = proprieta.getProperty("db.dialect");
             ConfigurationDB config = new ConfigurationDB(dbType, dbHost, dbPort, dbTmpDb, dbDriver, dbSchemaGeneratorClass,
-                    dbName, dbUsername, dbPassword, dbDialect); ;
+                    dbName, dbUsername, dbPassword, dbDialect);;
             logger.info("Configuration DB loaded: {}", config);
             return config;
         } catch (Exception e) {

@@ -1,5 +1,7 @@
 package tech.skullprogrammer.projectmaker.proxy;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.Properties;
@@ -46,12 +48,13 @@ public class ConfigurationProxy {
 
     private Configuration loadConfiguration(String fileName) {
         InputStream stream = null;
-        stream = this.getClass().getResourceAsStream(fileName);
-        if (stream == null) {
-            throw new DAOException("Impossible to load configuration file");
-        }
         try {
-            stream = this.getClass().getResourceAsStream(fileName);
+            stream = new FileInputStream(fileName);
+//            stream = this.getClass().getResourceAsStream(fileName);
+            if (stream == null) {
+                throw new DAOException("Impossible to load configuration file..");
+            }
+//            stream = this.getClass().getResourceAsStream(fileName);
             Properties proprieta = new Properties();
             proprieta.load(stream);
             String packageRootName = proprieta.getProperty("package.root.name");

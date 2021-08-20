@@ -57,7 +57,8 @@ public class Utility {
 
     public static Date checkUpdates(String nomeFile, Date lastDate) {
         try {
-            File fileClassificazione = new File(Utility.class.getResource(nomeFile).toURI());
+            File fileClassificazione = new File(nomeFile);
+//            File fileClassificazione = new File(Utility.class.getResource(nomeFile).toURI());
             Date dataUltimaModifica = new Date(fileClassificazione.lastModified());
             if (logger.isDebugEnabled()) logger.debug("Verifico aggiornamenti nel file: " + nomeFile);
             if (logger.isDebugEnabled()) logger.debug("Data ultimo aggiornamento: " + dataUltimaModifica + " - Ultima consultazione: " + lastDate);
@@ -66,7 +67,7 @@ public class Utility {
                 return dataUltimaModifica;
             }
             return null;
-        } catch (URISyntaxException ex) {
+        } catch (Exception ex) {
             logger.error(ex.getLocalizedMessage());
             throw new IllegalArgumentException("Impossibile caricare il file con la classificazione delle riviste... " + nomeFile);
         }
